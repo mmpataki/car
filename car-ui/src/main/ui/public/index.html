@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%; overflow: hidden">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+  <title>
+    <%= htmlWebpackPlugin.options.title %>
+  </title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://moment.github.io/luxon/global/luxon.min.js"></script>
+  <script>let DateTime = luxon.DateTime</script>
+  <style>
+    .form-row {
+      display: flex;
+      align-items: center;
+      padding: 10px 0px;
+    }
+
+    .form-row label:not(:first-child) {
+      padding-left: 20px;
+    }
+
+    .form-row button {
+      margin-right: 10px;
+    }
+
+    .form-col {
+      display: flex;
+      flex-direction: column;
+      padding: 10px 0px;
+    }
+
+    .form input,
+    .form textarea,
+    .form select {
+      outline: none;
+      border-radius: 5px;
+      padding: 4px 5px;
+      border: solid 1px #dadde6;
+    }
+
+    .form-row * {
+      flex-grow: 1;
+    }
+
+    .form-row label,
+    .form-col label,
+    .fdrflex label,
+    .form-col button,
+    .form-row button,
+    .fdrflex button {
+      flex-grow: 0;
+    }
+
+    .form-row label,
+    .form-col label,
+    .form-label,
+    .form label {
+      padding-right: 5px;
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 0px;
+    }
+
+    *:hover {
+      scrollbar-color: lightgray;
+    }
+
+    *:hover::-webkit-scrollbar-thumb {
+      background: lightgray;
+    }
+
+    /* Track */
+    ::-webkit-scrollbar-track {
+      box-shadow: inset 0 0 5px transparent;
+      border-radius: 3px;
+    }
+
+    /* Handle */
+    ::-webkit-scrollbar-thumb {
+      background: transparent;
+      border-radius: 3px;
+    }
+    
+    * {
+      scrollbar-color: transparent;
+      scrollbar-width: 2px;
+    }
+
+
+    /* global styles */
+    .log-row:hover {
+      background-color: lavender;
+    }
+  </style>
+</head>
+
+<body style="height: 100%">
+  <noscript>
+    <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled.
+        Please enable it to continue.</strong>
+  </noscript>
+  <div id="app" style="height: 100%"></div>
+  <!-- built files will be auto injected -->
+</body>
+
+</html>

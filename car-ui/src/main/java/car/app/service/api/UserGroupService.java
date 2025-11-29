@@ -1,0 +1,251 @@
+package car.app.service.api;
+
+import car.app.models.Credential;
+import car.app.models.Group;
+import car.app.models.User;
+import car.app.models.UserInfo;
+import car.app.repository.GroupRepo;
+import car.app.repository.UserRepo;
+import car.app.util.Hasher;
+import car.util.SecurityUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static car.app.util.TryCatchUtil.tc;
+
+@Service
+public class UserGroupService extends Observable {
+
+    Logger LOG = LoggerFactory.getLogger(UserGroupService.class);
+
+    @Autowired
+    EventService ES;
+
+    @Autowired
+    UserRepo UR;
+
+    @Autowired
+    GroupRepo GR;
+
+    Random R = new Random();
+
+    enum Events {
+        USER_REGISTERED,
+        USER_ADDED_TO_GROUP,
+        USER_SEARCH
+    }
+
+    @PostConstruct
+    public void _init() {
+
+        /* send user registration emails : push to show this is NEEDED */
+        registerPostEvent(Events.USER_REGISTERED, o -> {
+            ES.post(EventService.Type.REGISTER_USER, o);
+        });
+
+        /* add user groups to user info */
+        registerPostEvent(Events.USER_SEARCH, ed -> {
+            UserInfo u = (UserInfo) ed.get("userInfo");
+            u.addExtraInfo("groups", getGroupsOf(u.getBasic().getUserName()));
+        });
+
+        tc(() -> _createGroup(new Group(ADMIN, "admin group", "", "")));
+        tc(() -> _createGroup(new Group(PUBLIC, "everyone", "", "")));
+        tc(() -> _createGroup(new Group(SECURITY, "security group to review content", "", "")));
+
+        tc(() -> _register(new User("mmp", "Madhusoodan Pataki", "m@123", true, "CREATE,DELETE,EDIT,UPVOTE,DOWNVOTE,COMMENT", "", "")));
+        tc(() -> _register(new User("admin", "Admin", "a@123", true, "CREATE,DELETE,EDIT,UPVOTE,DOWNVOTE,COMMENT,ADMIN", "", "")));
+
+        tc(() -> _addUserToGroup(ADMIN, "admin"));
+        tc(() -> _addUserToGroup(SECURITY, "admin"));
+    }
+
+    public boolean authenticate(Credential cred) throws Exception {
+        User c = getUser(cred.getUserName());
+        if (c != null) {
+            return c.isVerified() && c.getPassword().equals(Hasher.hash(cred.getPassword()));
+        }
+        return false;
+    }
+
+    public void validate(String uid, String tok) throws Exception {
+        User u = getUser(uid);
+        if (!u.__getRegTok().equals(tok)) {
+            throw new Exception("token don't match, re-register");
+        }
+        u.setVerified(true);
+        UR.save(u);
+    }
+
+    public void register(User user) throws Exception {
+        if (getUser(user.getUserName()) != null) {
+            throw new UserExistsException(user.getUserName() + " already exists");
+        }
+        user.setRoles("CREATE,UPVOTE,DOWNVOTE,COMMENT");
+        user.setVerified(false);
+        user.setRegTok(R.nextDouble() + "-" + R.nextInt());
+
+        notifyPreEvent(Events.USER_REGISTERED, EventData.of("user", user));
+        _register(user);
+        notifyPostEvent(Events.USER_REGISTERED, EventData.of("user", user));
+    }
+
+    private void _register(User user) throws Exception {
+        user.setPassword(Hasher.hash(user.getPassword()));
+        UR.save(user);
+        _addUserToGroup(PUBLIC, user.getUserName());
+    }
+
+    /**
+     * @param userName
+     * @throws Exception
+     * @returnb : null if not present, clone of the user otherwise
+     */
+    public User getUser(String userName) throws Exception {
+        User cred = UR.findById(userName).orElse(null);
+        if (cred != null) {
+            return cred.clone();
+        }
+        return null;
+    }
+
+    public boolean isAdmin(String userId) throws Exception {
+        if(userId == null) return false;
+        return getUser(userId).getRoles().contains("ADMIN");
+    }
+
+    public boolean amIAdmin() throws Exception {
+        return isAdmin(SecurityUtil.getCurrentUser());
+    }
+
+    public List<User> getUsers() throws Exception {
+        List<User> ret = new LinkedList<>();
+        UR.findAll().forEach(ret::add);
+        return ret;
+    }
+
+    public UserInfo getUserInfo(String uid) throws Exception {
+        User user = getUser(uid);
+        notifyPreEvent(Events.USER_SEARCH, EventData.of("userId", uid));
+        UserInfo uInfo = new UserInfo(user);
+        notifyPostEvent(Events.USER_SEARCH, EventData.of("userInfo", uInfo));
+        return uInfo;
+    }
+
+    public void updateUser(User u) throws Exception {
+
+        String modifier = SecurityUtil.getCurrentUser();
+
+        if (modifier == null || (!modifier.equals(u.getUserName()) && !isAdmin(modifier))) {
+            throw new UnAuthorizedException("Unauthorized");
+        }
+
+        User modifierUser = getUser(modifier);
+        if (u.getRoles() != null) {
+            for (String role : u.getRoles().split(",")) {
+                if (!modifierUser.getRoles().contains(role)) {
+                    throw new UnAuthorizedException("You are not authorized to modify roles of this user");
+                }
+            }
+        }
+
+        User origUser = getUser(u.getUserName());
+        for (String role : origUser.getRoles().split(",")) {
+            if (!modifierUser.getRoles().contains(role)) {
+                throw new UnAuthorizedException("You are not authorized to modify roles of this user");
+            }
+        }
+
+        // this origUser is cached, so don't update it right now, let implementation do it.
+        User copyUser = origUser.clone();
+
+        if (u.getRoles() != null)
+            copyUser.setRoles(u.getRoles());
+
+        if (isAdmin(modifier) || modifier.equals(u.getUserName())) {
+            copyUser.setFullName(u.getFullName());
+            copyUser.setEmail(u.getEmail());
+            copyUser.setTeamsUrl(u.getTeamsUrl());
+            if (u.getPassword() != null && !u.getPassword().isEmpty())
+                copyUser.setPassword(u.getPassword());
+        }
+
+        UR.save(copyUser);
+    }
+
+    public List<UserRepo.UserNameAndFullName> findUsersLike(String sQuery) {
+        return UR.findByUserNameContainingIgnoreCaseOrFullNameContainingIgnoreCase(sQuery, sQuery);
+    }
+
+    public List<String> findGroupsLike(String sQuery) {
+        return GR.findByGroupNameContainingIgnoreCase(sQuery).stream().map(g -> g.getGroupName()).collect(Collectors.toList());
+    }
+
+    public static final String SECURITY = "security";
+    public static final String ADMIN = "admin";
+    public static final String PUBLIC = "public";
+
+
+    @Autowired
+    AuthorizationService AS;
+
+    public List<String> getAllGroups() throws Exception {
+        List<String> ret = new LinkedList<>();
+        GR.findAll().forEach(x -> ret.add(x.getGroupName()));
+        return ret;
+    }
+
+    public List<String> getGroupsOf(String user) throws Exception {
+        if (user == null) {
+            return Collections.singletonList(PUBLIC);
+        }
+        List<String> grps = GR.findGroupNameByUsers(User.builder().userName(user).build()).stream().map(x -> x.getGroupName()).collect(Collectors.toList());
+        return grps;
+    }
+
+    public Group getGroup(String groupName) throws Exception {
+        return GR.findById(groupName).orElse(null);
+    }
+
+    public void createGroup(Group grp) throws Exception {
+        AS.checkGroupCreationPermissions();
+        grp.addUser(getUser(SecurityUtil.getCurrentUser()));
+        _createGroup(grp);
+    }
+
+    public void addUserToGroup(String group, String user) throws Exception {
+        AS.checkAddUserToGroupPermission(group);
+        _addUserToGroup(group, user);
+        notifyPostEvent(Events.USER_ADDED_TO_GROUP, EventData.of("user", getUser(user), "group", group));
+    }
+
+    public void deleteUserFromGroup(String group, String user) throws Exception {
+        AS.checkDeleteUserFromGroupPermission(group);
+        _deleteUserFromGroup(group, user);
+    }
+
+    protected void _addUserToGroup(String groupName, String userName) throws Exception {
+        Group grp = getGroup(groupName);
+        User user = getUser(userName);
+        grp.addUser(user);
+        GR.save(grp);
+    }
+
+    protected void _createGroup(Group grp) throws Exception {
+        if(getGroup(grp.getGroupName()) == null)
+            GR.save(grp);
+    }
+
+    public void _deleteUserFromGroup(String group, String user) throws Exception {
+        Group grp = getGroup(group);
+        grp.deleteUser(user);
+        GR.save(grp);
+    }
+
+}

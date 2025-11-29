@@ -1,0 +1,5 @@
+CS [mycs] started
+foo has occured
+bar didn't happen
+baz is about to occur
+CS [mycs] finished

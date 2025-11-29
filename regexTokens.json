@@ -1,0 +1,150 @@
+{
+  "number": {
+    "integer": {
+      "regex": "[0-9]+",
+      "label": "integer",
+      "type": "number",
+      "varName": "num",
+      "skipForScan": false
+    },
+    "float": {
+      "regex": "[0-9]+(?:\\.[0-9]+)",
+      "label": "float",
+      "type": "number",
+      "varName": "num",
+      "skipForScan": false
+    }
+  },
+  "string": {
+    "string": {
+      "regex": ".*",
+      "label": "a normal string",
+      "type": "string",
+      "varName": "str",
+      "skipForScan": true
+    },
+    "greedystr": {
+      "regex": ".*?",
+      "label": "a greedy string",
+      "type": "string",
+      "varName": "str",
+      "skipForScan": true
+    }
+  },
+  "filepath": {
+    "Unix path": {
+      "regex": "(?:[a-zA-Z0-9_]?(?:\\/[a-zA-Z0-9_]+)+\\/?)",
+      "label": "Unix path",
+      "type": "string",
+      "varName": "path",
+      "skipForScan": false
+    }
+  },
+  "classname": {
+    "Class name": {
+      "regex": "(?:(?:[a-zA-Z0-9]*\\.)+[$_a-zA-Z0-9]+)",
+      "label": "Class name",
+      "type": "string",
+      "varName": "klass",
+      "skipForScan": false
+    }
+  },
+  "loglevel": {
+    "Log level": {
+      "regex": "(?:INFO|ALL|WARN|WARNING|FINE|DEBUG|TRACE|ERROR|FATAL|SEVERE)",
+      "label": "Log level",
+      "type": "string",
+      "varName": "loglvl",
+      "skipForScan": false
+    }
+  },
+  "json": {
+    "json": {
+      "regex": ".*",
+      "label": "JSON object/array",
+      "type": "json",
+      "varName": "json",
+      "skipForScan": true
+    }
+  },
+  "ts": {
+    "yyyy-MM-dd HH:mm:ss": {
+      "regex": "(?:\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})",
+      "label": "yyyy-MM-dd HH:mm:ss",
+      "type": "date",
+      "varName": "ts",
+      "skipForScan": false,
+      "props": [
+        {
+          "key": "format",
+          "value": "yyyy-MM-dd HH:mm:ss"
+        }
+      ]
+    },
+    "yyyy-MM-dd HH:mm:ss,SSS": {
+      "regex": "(?:\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3})",
+      "label": "yyyy-MM-dd HH:mm:ss,SSS",
+      "type": "date",
+      "varName": "ts",
+      "skipForScan": false,
+      "props": [
+        {
+          "key": "format",
+          "value": "yyyy-MM-dd HH:mm:ss,SSS"
+        }
+      ]
+    },
+    "yyyy-MM-dd HH:mm:ss.SSS": {
+      "regex": "(?:\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3})",
+      "label": "yyyy-MM-dd HH:mm:ss.SSS",
+      "type": "date",
+      "varName": "ts",
+      "skipForScan": false,
+      "props": [
+        {
+          "key": "format",
+          "value": "yyyy-MM-dd HH:mm:ss.SSS"
+        }
+      ]
+    },
+    "yy/mm/dd hh:mm:ss": {
+      "regex": "(?:\\d{2}\\/\\d{2}\\/\\d{2} \\d{2}\\:\\d{2}\\:\\d{2})",
+      "label": "yy/mm/dd hh:mm:ss",
+      "type": "date",
+      "varName": "ts",
+      "skipForScan": false,
+      "props": [
+        {
+          "key": "format",
+          "value": "yy/MM/dd HH:mm:ss"
+        }
+      ]
+    },
+    "yyyy-mm-ddThh:mm:ss.SSSZ": {
+      "regex": "(?:\\d{4}\\-\\d{2}\\-\\d{2}T\\d{2}\\:\\d{2}\\:\\d{2}.\\d{3}Z)",
+      "label": "yyyy-mm-ddThh:mm:ss.SSSZ",
+      "type": "date",
+      "varName": "ts",
+      "skipForScan": false,
+      "props": [
+        {
+          "key": "format",
+          "value": "yyyy-MM-dd\u0027T\u0027HH:mm:ss.SSSX"
+        }
+      ]
+    },
+    "yyyy-MM-dd HH:mm:ss,SSS zzz": {
+      "regex": "(?:\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3} [A-Z]+)",
+      "label": "yyyy-MM-dd HH:mm:ss,SSS zzz",
+      "type": "date",
+      "varName": "ts",
+      "skipForScan": false,
+      "props": [
+        {
+          "key": "format",
+          "value": "yyyy-MM-dd HH:mm:ss,SSS zzz"
+        }
+      ]
+    }
+  }
+}
