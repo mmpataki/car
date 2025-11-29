@@ -22,9 +22,9 @@
             <version>5.3</version>
         </dependency>
         <dependency>
-            <groupId>com.mmp</groupId>
+            <groupId>com.github.mmpataki</groupId>
             <artifactId>sdfs</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>main-344ddaf0db-1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

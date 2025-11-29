@@ -127,7 +127,50 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.3</version> <!-- Use the latest stable version -->
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>car.app.App</mainClass>
+                                </transformer>
+                            </transformers>
+                            <finalName>car-ui-shaded</finalName>
+                            <!-- Optional: Relocate classes to avoid conflicts -->
+                            <!--
+                            <relocations>
+                                <relocation>
+                                    <pattern>org.some.conflicting.package</pattern>
+                                    <shadedPattern>com.example.relocated.org.some.conflicting.package</shadedPattern>
+                                </relocation>
+                            </relocations>
+                            -->
+                            <!-- Optional: Exclude certain dependencies -->
+                            <!--
+                            <filters>
+                                <filter>
+                                    <artifact>groupId:artifactId</artifact>
+                                    <excludes>
+                                        <exclude>path/to/file.class</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            -->
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
 
 </project>
