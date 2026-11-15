@@ -2,8 +2,6 @@
 
 CAR is a distributed framework to analyze and visualize log files, or any text files. You upload files into a dataset, CAR detects the log type, parses each message into typed fields using regex rules, indexes the result, and lets you search it and build dashboards on top.
 
-A fork of this system runs in production with about 1,000 users.
-
 ## What it does
 
 - **Log type detection**: picks the right rule set for a file from its name and content.
